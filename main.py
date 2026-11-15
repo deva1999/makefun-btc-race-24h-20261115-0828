@@ -17,8 +17,8 @@ no randomness; the only state is the close history):
   - Exit (whole position) when any of these fires:
       * the close breaks below the lowest close of the previous 60 bars
         (the breakout failed / the trend reversed),
-      * the price falls 50 bps below the entry close (hard stop),
-      * the price falls 120 bps below the highest close since entry
+      * the price falls 45 bps below the entry close (hard stop),
+      * the price falls 100 bps below the highest close since entry
         (trailing stop that locks in a runaway move).
   - Nothing else: no take-profit (a strong hour can run several percent),
     no re-entry cooldown (a fresh breakout after an exit is a fresh signal),
@@ -27,12 +27,17 @@ no randomness; the only state is the close history):
 Why these numbers: on the published dev window the breakout filter fires
 twice in 1,440 bars and both round trips are profitable, while EMA-cross
 and dip-buying variants tested on the same window all lose money to
-whipsaw costs. The 60-bar lookback and 40 bps confirmation were chosen
-because the same trades result for 30- and 60-bar lookbacks and for
-stops of 40-60 bps, i.e. the signal is not a knife-edge fit to one
-parameter value. The dev window decides only whether this bot races;
-the race window is unseen, so the design deliberately prefers missing
-a marginal move over paying for a false one.
+whipsaw costs. Sensitivity around the chosen point, measured with the
+harness's exact fill arithmetic: a 30 bps confirmation admits extra false
+breakouts (8 trades, losing), a 50 bps confirmation misses the entries
+(2 trades, losing) - 40 bps sits ~3 sigma above the 12 bps one-minute
+noise, which is the structural reason it separates signal from noise.
+Stops and trails were picked mid-cluster, not at the best point:
+stop 35-60 bps with trail 80-200 bps all stay profitable ($5.65-$10.09),
+and the chosen 45/100 bps sits inside that plateau. The dev window
+decides only whether this bot races; the race window is unseen, so the
+design deliberately prefers missing a marginal move over paying for a
+false one.
 """
 
 import os
@@ -44,8 +49,8 @@ import makefun_bars
 SYMBOL = "CBBTC"
 LOOKBACK = 60            # bars defining the breakout range
 CONFIRM_BPS = 40         # entry must clear the 60-bar high by this much
-STOP_BPS = 50            # hard stop below the entry close
-TRAIL_BPS = 120          # trailing stop below the high since entry
+STOP_BPS = 45            # hard stop below the entry close
+TRAIL_BPS = 100          # trailing stop below the high since entry
 MAX_SLIPPAGE_BPS = 300   # ~4x the largest 1-minute move seen on the dev window (79 bps)
 
 closes = []              # close prices (ints), one per bar that carried CBBTC

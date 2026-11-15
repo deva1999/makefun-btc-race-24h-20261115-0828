@@ -19,7 +19,7 @@ rarely, only on a confirmed breakout:
 - **Enter** (all cash) when the close breaks above the highest close of the previous 60 bars
   by more than 40 bps.
 - **Exit** (whole position) when the close breaks below the lowest close of the previous
-  60 bars, or falls 50 bps below the entry close (hard stop), or trails 120 bps below the
+  60 bars, or falls 45 bps below the entry close (hard stop), or trails 100 bps below the
   highest close since entry. No take-profit: a strong hour can run several percent.
 - **Nothing else.** No trading before 61 closes of history. Pure integer arithmetic on
   close prices; deterministic, no clock, no network, no randomness.
@@ -32,9 +32,13 @@ Run from the kit directory (the kit is not part of this repo):
 node cli/makefun.mjs grade-local --kit <kit-dir> --bot . --driver process
 ```
 
-Dev window (1,440 bars, frozen): the breakout filter fires twice, both round trips profitable.
-See `main.py` for the full reasoning and the parameter-robustness note (the same trades
-result for 30- and 60-bar lookbacks and stops of 40–60 bps).
+Dev window (1,440 bars, frozen): the breakout filter fires twice, both round trips
+profitable — net PnL **+$8.22** on $1,000, max drawdown 1.21%, 4 trades, $1.60 fees
+(measured with the harness's exact fill arithmetic in a local replay, since the
+kit's `grade-local` needs Docker, which this machine does not have; the server's
+dev grade is the authoritative check). The whole dev profit comes from the
+second round trip; the first half of the window contributes $0 (no trades).
+See `main.py` for the full reasoning and the parameter-sensitivity note.
 
 ## Layout
 
